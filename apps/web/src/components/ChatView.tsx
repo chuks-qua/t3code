@@ -2611,6 +2611,15 @@ export default function ChatView({ threadId }: ChatViewProps) {
 
       beginSendPhase("sending-turn");
       const turnAttachments = await turnAttachmentsPromise;
+      const providerOptionsForDispatch =
+        settings.codexBinaryPath || settings.codexHomePath
+          ? {
+              codex: {
+                ...(settings.codexBinaryPath ? { binaryPath: settings.codexBinaryPath } : {}),
+                ...(settings.codexHomePath ? { homePath: settings.codexHomePath } : {}),
+              },
+            }
+          : undefined;
       await api.orchestration.dispatchCommand({
         type: "thread.turn.start",
         commandId: newCommandId(),
@@ -2625,6 +2634,9 @@ export default function ChatView({ threadId }: ChatViewProps) {
         serviceTier: selectedServiceTier,
         ...(selectedModelOptionsForDispatch
           ? { modelOptions: selectedModelOptionsForDispatch }
+          : {}),
+        ...(providerOptionsForDispatch
+          ? { providerOptions: providerOptionsForDispatch }
           : {}),
         provider: selectedProvider,
         assistantDeliveryMode: settings.enableAssistantStreaming ? "streaming" : "buffered",
