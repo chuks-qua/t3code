@@ -1,3 +1,7 @@
+---
+desc: Update this file when asked to update your instructions.
+---
+
 # AGENTS.md
 
 ## Task Completion Requirements
