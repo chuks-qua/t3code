@@ -227,6 +227,7 @@ const publishCmd = Command.make(
                 cwd: serverDir,
                 stdout: config.verbose ? "inherit" : "ignore",
                 stderr: "inherit",
+                // Windows needs shell mode to resolve .cmd shims.
                 shell: process.platform === "win32",
               }),
             );
