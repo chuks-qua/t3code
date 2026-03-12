@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  clampCollapsedComposerCursor,
+  collapseExpandedComposerCursor,
   detectComposerTrigger,
   expandCollapsedComposerCursor,
   isCollapsedCursorAdjacentToMention,
@@ -84,6 +86,18 @@ describe("detectComposerTrigger", () => {
       rangeEnd: cursorAfterQuery,
     });
   });
+
+  it("detects trigger with true cursor even when regex-based mention detection would false-match", () => {
+    // MENTION_TOKEN_REGEX can false-match plain text like "@in" as a mention.
+    // The fix bypasses it by computing the expanded cursor from the Lexical node tree.
+    const text = "Please inspect @in this sentence";
+    const cursorAfterAt = "Please inspect @".length;
+
+    const trigger = detectComposerTrigger(text, cursorAfterAt);
+    expect(trigger).not.toBeNull();
+    expect(trigger?.kind).toBe("path");
+    expect(trigger?.query).toBe("");
+  });
 });
 
 describe("replaceTextRange", () => {
@@ -118,19 +132,63 @@ describe("expandCollapsedComposerCursor", () => {
 
     expect(detectComposerTrigger(text, expandedCursor)).toBeNull();
   });
+});
 
-  it("detectComposerTrigger works with true cursor even when expandCollapsedComposerCursor is wrong", () => {
-    // expandCollapsedComposerCursor uses MENTION_TOKEN_REGEX which can false-match
-    // plain text like "@in" as a mention. The fix bypasses it by computing the expanded
-    // cursor directly from the Lexical editor's node tree.
-    const text = "Please inspect @in this sentence";
-    const cursorAfterAt = "Please inspect @".length;
+describe("collapseExpandedComposerCursor", () => {
+  it("keeps cursor unchanged when no mention segment is present", () => {
+    expect(collapseExpandedComposerCursor("plain text", 5)).toBe(5);
+  });
 
-    // With the true cursor position, trigger detection works correctly
-    const trigger = detectComposerTrigger(text, cursorAfterAt);
-    expect(trigger).not.toBeNull();
-    expect(trigger?.kind).toBe("path");
-    expect(trigger?.query).toBe("");
+  it("maps expanded mention cursor back to collapsed cursor", () => {
+    const text = "what's in my @AGENTS.md fsfdas";
+    const collapsedCursorAfterMention = "what's in my ".length + 2;
+    const expandedCursorAfterMention = "what's in my @AGENTS.md ".length;
+
+    expect(collapseExpandedComposerCursor(text, expandedCursorAfterMention)).toBe(
+      collapsedCursorAfterMention,
+    );
+  });
+
+  it("keeps replacement cursors aligned when another mention already exists earlier", () => {
+    const text = "open @AGENTS.md then @src/index.ts ";
+    const expandedCursor = text.length;
+    const collapsedCursor = collapseExpandedComposerCursor(text, expandedCursor);
+
+    expect(collapsedCursor).toBe("open ".length + 1 + " then ".length + 2);
+    expect(expandCollapsedComposerCursor(text, collapsedCursor)).toBe(expandedCursor);
+  });
+});
+
+describe("clampCollapsedComposerCursor", () => {
+  it("clamps to collapsed prompt length when mentions are present", () => {
+    const text = "open @AGENTS.md then ";
+
+    expect(clampCollapsedComposerCursor(text, text.length)).toBe(
+      "open ".length + 1 + " then ".length,
+    );
+    expect(clampCollapsedComposerCursor(text, Number.POSITIVE_INFINITY)).toBe(
+      "open ".length + 1 + " then ".length,
+    );
+  });
+});
+
+describe("replaceTextRange trailing space consumption", () => {
+  it("double space after insertion when replacement ends with space", () => {
+    // Simulates: "and then |@AG| summarize" where | marks replacement range
+    // The replacement is "@AGENTS.md " (with trailing space)
+    // But if we don't extend rangeEnd, the existing space stays
+    const text = "and then @AG summarize";
+    const rangeStart = "and then ".length;
+    const rangeEnd = "and then @AG".length;
+
+    // Without consuming trailing space: double space
+    const withoutConsume = replaceTextRange(text, rangeStart, rangeEnd, "@AGENTS.md ");
+    expect(withoutConsume.text).toBe("and then @AGENTS.md  summarize");
+
+    // With consuming trailing space: single space
+    const extendedEnd = text[rangeEnd] === " " ? rangeEnd + 1 : rangeEnd;
+    const withConsume = replaceTextRange(text, rangeStart, extendedEnd, "@AGENTS.md ");
+    expect(withConsume.text).toBe("and then @AGENTS.md summarize");
   });
 });
 
