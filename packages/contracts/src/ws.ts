@@ -112,9 +112,12 @@ const WebSocketRequestBody = Schema.Union([
   // Project Search
   tagRequestBody(WS_METHODS.projectsSearchEntries, ProjectSearchEntriesInput),
   tagRequestBody(WS_METHODS.projectsWriteFile, ProjectWriteFileInput),
-  tagRequestBody(WS_METHODS.checkProjectDirectories, Schema.Struct({
-    cwds: Schema.Array(Schema.String),
-  })),
+  tagRequestBody(
+    WS_METHODS.checkProjectDirectories,
+    Schema.Struct({
+      cwds: Schema.Array(Schema.String),
+    }),
+  ),
 
   // Shell methods
   tagRequestBody(WS_METHODS.shellOpenInEditor, OpenInEditorInput),

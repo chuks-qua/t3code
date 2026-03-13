@@ -462,9 +462,15 @@ export const useStore = create<AppStore>((set, get) => ({
     set((state) => setThreadBranch(state, threadId, branch, worktreePath)),
   setMissingProjectCwds: (cwds) => {
     const current = get().missingProjectCwds;
-    if (cwds.size !== current.size) { set({ missingProjectCwds: cwds }); return; }
+    if (cwds.size !== current.size) {
+      set({ missingProjectCwds: cwds });
+      return;
+    }
     for (const c of cwds) {
-      if (!current.has(c)) { set({ missingProjectCwds: cwds }); return; }
+      if (!current.has(c)) {
+        set({ missingProjectCwds: cwds });
+        return;
+      }
     }
     // Sets are equal, no update needed
   },

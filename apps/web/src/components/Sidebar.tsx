@@ -1397,7 +1397,9 @@ export default function Sidebar() {
                                     .runningTerminalIds,
                                 );
                                 const projectCwd = projectCwdById.get(thread.projectId);
-                                const isProjectMissing = projectCwd ? missingProjectCwds.has(projectCwd) : false;
+                                const isProjectMissing = projectCwd
+                                  ? missingProjectCwds.has(projectCwd)
+                                  : false;
 
                                 return (
                                   <SidebarMenuSubItem
@@ -1532,7 +1534,8 @@ export default function Sidebar() {
                                           <span
                                             className={cn(
                                               "min-w-0 flex-1 truncate text-xs",
-                                              isProjectMissing && "line-through text-destructive/60",
+                                              isProjectMissing &&
+                                                "line-through text-destructive/60",
                                             )}
                                           >
                                             {thread.title}

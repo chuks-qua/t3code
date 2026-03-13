@@ -8,9 +8,7 @@ const CHECK_DEBOUNCE_MS = 500;
 const EMPTY_SET: ReadonlySet<string> = new Set();
 
 export function useProjectDirectoryCheck(): void {
-  const projectCwds = useStore(
-    useShallow((s) => s.projects.map((p) => p.cwd)),
-  );
+  const projectCwds = useStore(useShallow((s) => s.projects.map((p) => p.cwd)));
   const setMissingProjectCwds = useStore((s) => s.setMissingProjectCwds);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 

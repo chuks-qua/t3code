@@ -2202,7 +2202,15 @@ export default function ChatView({ threadId }: ChatViewProps) {
   const onSend = async (e?: { preventDefault: () => void }) => {
     e?.preventDefault();
     const api = readNativeApi();
-    if (!api || !activeThread || isSendBusy || isConnecting || isProjectDirectoryMissing || sendInFlightRef.current) return;
+    if (
+      !api ||
+      !activeThread ||
+      isSendBusy ||
+      isConnecting ||
+      isProjectDirectoryMissing ||
+      sendInFlightRef.current
+    )
+      return;
     if (activePendingProgress) {
       onAdvanceActivePendingUserInput();
       return;
@@ -3465,12 +3473,12 @@ export default function ChatView({ threadId }: ChatViewProps) {
                           ? (activePendingApproval?.detail ??
                             "Resolve this approval request to continue")
                           : activePendingProgress
-                          ? "Type your own answer, or leave this blank to use the selected option"
-                          : showPlanFollowUpPrompt && activeProposedPlan
-                            ? "Add feedback to refine the plan, or leave this blank to implement it"
-                            : phase === "disconnected"
-                              ? "Ask for follow-up changes or attach images"
-                              : "Ask anything, @tag files/folders, or use / to show available commands"
+                            ? "Type your own answer, or leave this blank to use the selected option"
+                            : showPlanFollowUpPrompt && activeProposedPlan
+                              ? "Add feedback to refine the plan, or leave this blank to implement it"
+                              : phase === "disconnected"
+                                ? "Ask for follow-up changes or attach images"
+                                : "Ask anything, @tag files/folders, or use / to show available commands"
                     }
                     disabled={isConnecting || isComposerApprovalState || isProjectDirectoryMissing}
                   />

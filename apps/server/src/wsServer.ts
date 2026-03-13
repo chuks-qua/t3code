@@ -778,11 +778,13 @@ export const createServer = Effect.fn(function* (): Effect.fn.Return<
 
       case WS_METHODS.checkProjectDirectories: {
         const { cwds } = request.body;
-        const results = yield* Effect.forEach(cwds, (cwd) =>
-          fileSystem.stat(cwd).pipe(
-            Effect.map((stat) => (stat.type !== "Directory" ? cwd : null)),
-            Effect.catch(() => Effect.succeed(cwd)),
-          ),
+        const results = yield* Effect.forEach(
+          cwds,
+          (cwd) =>
+            fileSystem.stat(cwd).pipe(
+              Effect.map((stat) => (stat.type !== "Directory" ? cwd : null)),
+              Effect.catch(() => Effect.succeed(cwd)),
+            ),
           { concurrency: "unbounded" },
         );
         return { missing: results.filter((r): r is string => r !== null) };
